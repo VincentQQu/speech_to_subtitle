@@ -3,6 +3,7 @@ This is a repository for an automatic program to extract speech from video, tran
 
 
 ### Work Flow
+0. Run **pip3 install -r requirements.txt** in terminal to install required packages
 1. Extract audio from video.
 2. Extract sound segments in the audio.
 3. Recognize speech segment by segment (use SpeechRecognition to recognize Japanese by default but you can modify language in line 150).
