@@ -19,7 +19,7 @@ googletrans==4.0.0rc1, moviepy==1.0.3, pydub==0.25.1, SpeechRecognition==3.10.0,
 2. Run **python3 speech_to_txt.py** in terminal to process all videos in source folder.
 3. Srt file will then be in source folder.
 
-**Note:** you can modify line 315 to modify source folder.
+**Note:** You can modify line 315 to add more source folders.
 
 
 ### To be Updated
