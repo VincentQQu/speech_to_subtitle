@@ -22,4 +22,4 @@ googletrans==4.0.0rc1, moviepy==1.0.3, pydub==0.25.1, SpeechRecognition==3.10.0,
 **Note:** You can modify line 315 to add more source folders.
 
 
-### To be Updated
+### To Be Updated
