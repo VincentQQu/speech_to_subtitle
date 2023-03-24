@@ -9,7 +9,7 @@ This is a repository for an automatic program to extract speech from video, tran
 4. Translate to target language (use GoogleTrans).
 5. Save as srt format.
 
-*** notes: you can modify line 18-29 in speech_to_txt.py to change detect (Japanese by default), source (Japanese by default), and target language (English by default). ***
+**Note: you can modify line 18-29 in speech_to_txt.py to change detect (Japanese by default), source (Japanese by default), and target language (English by default).**
 
 ### Requirements
 googletrans==4.0.0rc1, moviepy==1.0.3, pydub==0.25.1, SpeechRecognition==3.10.0, srt==3.5.2
