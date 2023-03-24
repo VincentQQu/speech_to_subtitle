@@ -13,6 +13,27 @@ from datetime import timedelta
 from xtimer import Timer
 import json, shutil, glob, math
 
+
+
+############################# language configuration #############################################
+## You can find all the possible languages here:
+# https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages
+# e.g., en, zh-cn, ja
+detect_language = "en"
+
+## You can find all the possible language here:
+# https://py-googletrans.readthedocs.io/en/latest/#googletrans-languages
+# e.g., en, zh-cn, ja
+source_language = "en"
+target_language = "zh-cn"
+############################# language configuration #############################################
+
+# set True for speech intense videos (e.g., presentation)
+# then you will get a txt file that is translated each 2min
+translate_as_whole = False 
+
+
+
 translator = Translator()
 r = sr.Recognizer()
 # https://realpython.com/python-speech-recognition/#how-speech-recognition-works-an-overview
@@ -63,7 +84,7 @@ def match_target_amplitude(sound, target_dBFS):
 
 
 
-def get_large_audio_transcription(aud_path, ext="wav"):
+def get_large_audio_transcription(aud_path, ext="wav", is_dense=False):
   """
   Splitting the large audio file into chunks
   and apply speech recognition on each of these chunks
@@ -120,6 +141,7 @@ def get_large_audio_transcription(aud_path, ext="wav"):
   subs = []
   # process each chunk 
   for i, duration in enumerate(nonsilent_data, start=1):
+    # continue
     # export audio chunk and save it in
     # the `folder_name` directory.
 
@@ -147,7 +169,7 @@ def get_large_audio_transcription(aud_path, ext="wav"):
 #################### modify language= to define the language to detect ##########
 ## You can find all the possible languages here:
 # https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages
-        text = r.recognize_google(audio_listened, language="ja")
+        text = r.recognize_google(audio_listened, language=detect_language)
 #################### modify language= to define the language to detect ##########
 
 
@@ -167,7 +189,7 @@ def get_large_audio_transcription(aud_path, ext="wav"):
 #################### modify src='ja', dest="zh-cn" to define the source and target language ##########
 ## You can find all the possible language here:
 # https://py-googletrans.readthedocs.io/en/latest/#googletrans-languages
-        transd = translator.translate(text, src='ja', dest="en") # en zh-cn
+        transd = translator.translate(text, src=source_language, dest=target_language) # en zh-cn
 #################### modify src='ja', dest="zh-cn" to define the source and target language ##########
 
 
@@ -197,9 +219,6 @@ def get_large_audio_transcription(aud_path, ext="wav"):
       sub = srt.Subtitle(index=index, start=start, end=end, content=combo_txt)
       subs.append(sub)
 
-
-
-      
       tim.lap()
 
       whole_text += text
@@ -207,9 +226,22 @@ def get_large_audio_transcription(aud_path, ext="wav"):
 
 
 
+
+
   final_srt = srt.compose(subs)
   with open(sub_name, 'w', encoding="utf-8") as f:
     f.write(final_srt)
+  
+
+
+
+  if is_dense:
+    sub_name = aud_path[:-3]+f"_whole.txt"
+    chunk_filename = tmp_path + f"/c{i}_{0//1000}_{len(normalized_sound)//1000}."+ext
+    detect_trans_as_whole(normalized_sound, chunk_filename, sub_name=sub_name, ext=ext)
+
+  
+
   
   # final_srt = srt.compose(subs)
   # print(final_srt)
@@ -219,6 +251,87 @@ def get_large_audio_transcription(aud_path, ext="wav"):
 
 
   return whole_text, whole_trans
+
+
+
+
+
+def detect_trans_as_whole(normalized_sound, chunk_filename, sub_name, ext):
+  print("$"*30)
+  print("Detect and translate as a whole:")
+  print("$"*30)
+
+  sem_len = 1000 * 120
+  tot_len = len(normalized_sound)
+
+  add_vol = 10
+
+  org_txt = ""
+  trans_txt = ""
+
+  seg_no = 0
+
+  for start_t in range(0, tot_len, sem_len):
+    end_t = start_t + sem_len
+    audio_chunk = normalized_sound[start_t:end_t] + add_vol
+    audio_chunk.export(chunk_filename, format=ext)
+    
+    # recognize the chunk
+    with sr.AudioFile(chunk_filename) as source:
+      audio_listened = r.record(source)
+      # try converting it to text
+
+    try:
+      text = r.recognize_google(audio_listened, language=detect_language)
+    except sr.UnknownValueError as e:
+      print("Recognize Error: ", str(e), end = '; ')
+      
+    except Exception as e:
+      print("Recognize Error:", str(e), end = '; ')
+
+    try:
+      print(text)
+      org_txt += f" ### {seg_no} ### "
+      org_txt += text
+
+      transd = translator.translate(text, src=source_language, dest=target_language) # en zh-cn
+
+    except Exception as e:
+      print("Translate Error:", str(e))
+
+    print(transd.text)
+    trans_txt += f" ### {seg_no} ### "
+    trans_txt += transd.text
+
+    seg_no += 1
+    
+
+
+  with open(sub_name, 'w', encoding="utf-8") as f:
+    f.write(org_txt + "\n" + trans_txt)
+    # f.write()
+    # f.write()
+  
+  return text, transd
+
+
+
+    
+
+
+
+def get_subtitle_from_dense_speech(aud_path, ext="wav"):
+  """
+  1. detect speech segments
+  2. combine them to regconise, and translate
+  3. segment them to subtitles
+  """
+  # todo
+
+  return
+
+
+
 
 
 
@@ -236,7 +349,8 @@ def get_sub_given_path(p):
   # print(path[-3:])
   # print(dir(AudioSegment))
   # 'from_flv', 'from_mono_audiosegments', 'from_mp3', 'from_ogg', 'from_raw', 'from_wav'
-  print("\nFull text:", get_large_audio_transcription(a_name,ext="wav"))
+  print("\nFull text:", get_large_audio_transcription(a_name, ext="wav", is_dense=translate_as_whole))
+
 
 
 
