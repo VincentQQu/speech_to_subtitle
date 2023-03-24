@@ -19,13 +19,13 @@ import json, shutil, glob, math
 ## You can find all the possible languages here:
 # https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages
 # e.g., en, zh-cn, ja
-detect_language = "en"
+detect_language = "ja"
 
 ## You can find all the possible language here:
 # https://py-googletrans.readthedocs.io/en/latest/#googletrans-languages
 # e.g., en, zh-cn, ja
-source_language = "en"
-target_language = "zh-cn"
+source_language = "ja"
+target_language = "en"
 ############################# language configuration #############################################
 
 # set True for speech intense videos (e.g., presentation)
